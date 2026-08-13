@@ -1,0 +1,13 @@
+# Citation file
+# For more information, see:
+# https://citation-file-format.github.io/
+cff-version: 1.2.0
+message: If you use this software or data produced by it, please cite it using the metadata from this file.
+title: "Modelblocks - module_vres_yearly_prod: Module for estimating yearly aggregated power production of solar PV and wind."
+repository: "https://github.com/tud-mchen6/module_vres_yearly_prod"
+license: Apache-2.0
+authors:
+  - given-names: "Meijun"
+    family-names: "Chen"
+    email: "m.chen-4@tudelft.nl"
+

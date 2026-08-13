@@ -1,0 +1,21 @@
+# Changes here will be overwritten by Copier
+# !!!!! DO NOT MANUALLY MODIFY THIS FILE !!!!!
+_commit: v1.0.3
+_src_path: https://github.com/modelblocks-org/data-module-template.git
+authors:
+-   email: m.chen-4@tudelft.nl
+    family_name: Chen
+    given_name: Meijun
+github_org: tud-mchen6
+license: Apache-2.0
+maintainers:
+-   email: m.chen-4@tudelft.nl
+    family_name: Chen
+    given_name: Meijun
+module_code_name: module_vres_yearly_prod
+module_description: This module takes inputs that specify the shapes of regions and
+    the availability pixels inside the shapes, along with user-defined cost parameters
+    of solar and wind technologies, and produces cost curves and land curves for each
+    technology type (unit cost on the y axis, and quantity on the x axis).
+module_human_name: Module for estimating yearly aggregated power production of solar
+    PV and wind.
