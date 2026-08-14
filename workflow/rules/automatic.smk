@@ -1,4 +1,4 @@
-"""Rules to used to download automatic resource files."""
+"""Rules to used to download, unzip and get the TIFF wind and solar atlases files."""
 
 
 rule dummy_download:
