@@ -1,2 +1,18 @@
 # A minimal example of how to configure this module
-dummy_text: This is a user input.
+
+techs:
+  pv_rooftop:
+    density: 50
+    lifetime: 40
+    costs:
+      CAPEX: 705000
+      OPEX: 9800
+      WACC: 0.05
+
+  pv_open_field:
+    density: 45
+    lifetime: 40
+    costs:
+      CAPEX: 380000
+      OPEX: 9500
+      WACC: 0.04
