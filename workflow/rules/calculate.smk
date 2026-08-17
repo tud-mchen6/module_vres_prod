@@ -5,9 +5,10 @@ to produce renewable yearly production potential of a given shape."""
 TECH_TO_SOURCE = {
     "pv_open_field": "PV",
     "pv_rooftop": "PV",
-    "wind_onshore": "wind",
-    "wind_offshore": "wind",
+    "wind_onshore": "WIND",
+    "wind_offshore": "WIND",
 }
+
 
 rule prod_quantity_cost:
     message:

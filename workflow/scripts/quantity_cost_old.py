@@ -7,47 +7,6 @@ together in a netCDF file for the given technology.
 import xarray as xr
 import rioxarray as rxr
 import numpy as np
-import dask.array as da
-
-
-# def flatten_with_pixel_id(input_raster):
-#     pixel_id = xr.DataArray(
-#         np.arange(input_raster.sizes["y"] * input_raster.sizes["x"]).reshape(
-#             input_raster.sizes["y"], input_raster.sizes["x"]
-#         ),
-#         dims=("y", "x"),
-#         coords={"y": input_raster.y, "x": input_raster.x},
-#         name="pixel_id",
-#     )
-#     pixel = input_raster.stack(pixel=("y", "x"))
-#     result = pixel.where(pixel.notnull(), drop=True)
-#     output_array = (
-#         result.assign_coords(
-#             pixel_id=(
-#                 "pixel",
-#                 pixel_id.stack(pixel=("y", "x")).sel(pixel=result.pixel).values,
-#             )
-#         )
-#         .swap_dims({"pixel": "pixel_id"})
-#         .drop_vars("pixel")
-#     )
-#     del pixel
-
-#     return output_array
-
-
-def flatten_with_pixel_id(input_raster):
-    pixel = input_raster.stack(pixel=("y", "x"))
-
-    # Pixel IDs correspond directly to the flattened pixel position.
-    pixel = pixel.assign_coords(
-        pixel_id=("pixel", np.arange(pixel.sizes["pixel"], dtype=np.int64))
-    )
-
-    # Remove nodata pixels.
-    pixel = pixel.where(pixel.notnull(), drop=True)
-
-    return pixel.swap_dims({"pixel": "pixel_id"}).drop_vars("pixel")
 
 
 def quantity_cost_tech(
@@ -73,31 +32,33 @@ def quantity_cost_tech(
     tech = snakemake.wildcards.tech
     # Get the area potentials
     area_potentials = rxr.open_rasterio(area_potentials_path)
-    area_potentials = area_potentials.where(area_potentials > 0, np.nan)
     # Load the capacity factor within the resampled input
     resampled = rxr.open_rasterio(resampled_path)
-    # To slim down the calculation, mask out the pixels where area_potentials is nan
-    # The atlas also has nan values from the original dataset
-    mask = np.isfinite(area_potentials) & np.isfinite(resampled)
-    resampled_masked = resampled.where(mask)
-    # Flatten the raster to decrease the size
-    area_potentials_flattened = flatten_with_pixel_id(area_potentials)
-    cf = flatten_with_pixel_id(resampled_masked)
 
     # Calculate the yearly aggregated production
     # Assuming same production level for each year
+
+    # Reindex to keep the original coordinates, otherwise there will be
+    # missing pixels in the result
+    cf = resampled.reindex(
+        y=area_potentials.y, x=area_potentials.x, method="nearest", tolerance=1e-6
+    )
     # area convert to km2; production unit is MWh
-    yearly_prod = area_potentials_flattened * cf * density * 8760 * 1e-6
+    yearly_prod = area_potentials * cf * density * 8760 * 1e-6
+    # Since area_potentials have -1 values, get rid of them
+    yearly_prod = yearly_prod.where(yearly_prod > 0, np.nan)
 
     # Calculate the rastered LCOE
     lcoe = (
         costs["CAPEX"] / (1 - (1 + costs["WACC"]) ** (-lifetime)) * costs["WACC"]
         + costs["OPEX"]
     ) / (cf * 8760)
+    # Make the not-eligible areas also without lcoe data
+    lcoe = lcoe.where(yearly_prod > 0, np.nan)
 
     # Save to .nc
     quantity_cost = xr.Dataset(
-        {"area": area_potentials_flattened, "prod": yearly_prod, "lcoe": lcoe}
+        {"area": area_potentials, "prod": yearly_prod, "lcoe": lcoe}
     )
     # add tech as a dimension, prepare for the synthesis
     quantity_cost = quantity_cost.rename_dims({"band": "tech"})
