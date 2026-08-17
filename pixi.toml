@@ -23,6 +23,8 @@ snakemake-minimal = ">=9.19.0"
 pytz = ">=2026.1.post1"
 rioxarray = ">=0.23.0"
 netcdf4 = ">=1.7.4"
+rasterio = ">=1.5.1"
+dask = ">=2026.7.1"
 
 [feature.module.dependencies]
 curl = ">=8.9.1"
