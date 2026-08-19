@@ -35,7 +35,7 @@ rule prod_quantity_cost:
 
 
 
-rule synthesized_cost_land:
+rule synthesise_cost_land:
     message:
         """
         Get the synthesized cost curve and land curve for a given shape, combining several
@@ -43,11 +43,11 @@ rule synthesized_cost_land:
         """
     input:
         quantity_cost_techs=lambda wildcards: expand(
-            "results/{shape}/quantity_cost_{tech}.nc",
+            "resources/automatic/resampled/{shape}/quantity_cost_{tech}.nc",
             shape=wildcards.shape,
             tech=config["techs"].keys(),
         ),
     output:
-        curve_data="results/{shape}/{subunit}/curves_data_prep.npz",
+        curve_data="results/{shape}/curves_data_prep.parquet",
     script:
-        "../scripts/synthesize_curves.py"
+        "../scripts/synthesise_curves.py"
