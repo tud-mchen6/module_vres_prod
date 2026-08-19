@@ -7,7 +7,6 @@ together in a netCDF file for the given technology.
 import xarray as xr
 import rioxarray as rxr
 import numpy as np
-import dask.array as da
 
 
 # def flatten_with_pixel_id(input_raster):
@@ -47,7 +46,7 @@ def flatten_with_pixel_id(input_raster):
     # Remove nodata pixels.
     pixel = pixel.where(pixel.notnull(), drop=True)
 
-    return pixel.swap_dims({"pixel": "pixel_id"}).drop_vars("pixel")
+    return pixel.swap_dims({"pixel": "pixel_id"}).drop_vars(["pixel", "x", "y"])
 
 
 def quantity_cost_tech(
@@ -96,6 +95,16 @@ def quantity_cost_tech(
     ) / (cf * 8760)
 
     # Save to .nc
+    # If the tech is offshore wind, it does not occupy land area, then make the
+    # area variable values zero
+    if tech == "wind_offshore":
+        area_potentials_flattened.values[:] = 0
+    # Downgrade the precision to float32 to save space
+    area_potentials_flattened = area_potentials_flattened.astype("float32")
+    area_potentials_flattened.attrs.pop("scale_factor", None)
+    area_potentials_flattened.attrs.pop("add_offset", None)
+    yearly_prod = yearly_prod.astype("float32")
+    # TODO: clean the Attributes of yearly_prod and lcoe
     quantity_cost = xr.Dataset(
         {"area": area_potentials_flattened, "prod": yearly_prod, "lcoe": lcoe}
     )
