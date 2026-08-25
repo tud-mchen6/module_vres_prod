@@ -9,7 +9,7 @@ rule clip_solar_atlas:
         "Clip the downloaded solar atlas to given shapes."
     input:
         raster="<resources>/automatic/global/PVOUT.tif",
-        like_raster="<resources>/user/shapes/{shape}/area_potential_pv_open_field.tif",
+        like_raster="<potentials>/shapes/{shape}/area_potential_pv_open_field.tif",
     output:
         path=temp("<resources>/automatic/cutout/{shape}/clipped_PVOUT.tif"),
     log:
@@ -23,7 +23,7 @@ rule clip_wind_atlas:
         "Clip the downloaded wind atlas to given shapes."
     input:
         raster="<resources>/automatic/global/WINDOUT.tif",
-        like_raster="<resources>/user/shapes/{shape}/area_potential_wind_onshore.tif",
+        like_raster="<potentials>/shapes/{shape}/area_potential_wind_onshore.tif",
     output:
         path="<resources>/automatic/cutout/{shape}/clipped_WINDOUT.tif",
     log:
@@ -37,7 +37,7 @@ rule resample_solar_atlas:
         "Resample the clipped atlas to the given resolution."
     input:
         raster="<resources>/automatic/cutout/{shape}/clipped_PVOUT.tif",
-        like_raster="<resources>/user/shapes/{shape}/area_potential_pv_open_field.tif",
+        like_raster="<potentials>/shapes/{shape}/area_potential_pv_open_field.tif",
         script=workflow.source_path("../scripts/resample_atlas.py"),
     output:
         path="<resources>/automatic/resampled/{shape}/resampled_PVOUT.tif",
@@ -54,7 +54,7 @@ rule resample_wind_atlas:
         "Resample the clipped atlas to the given resolution."
     input:
         raster="<resources>/automatic/cutout/{shape}/clipped_WINDOUT.tif",
-        like_raster="<resources>/user/shapes/{shape}/area_potential_wind_onshore.tif",
+        like_raster="<potentials>/shapes/{shape}/area_potential_wind_onshore.tif",
         script=workflow.source_path("../scripts/resample_atlas.py"),
     output:
         path="<resources>/automatic/resampled/{shape}/resampled_WINDOUT.tif",

@@ -22,7 +22,7 @@ rule prod_quantity_cost:
         lifetime=lambda wildcards: config["techs"][f"{wildcards.tech}"]["lifetime"],
         costs=lambda wildcards: config["techs"][f"{wildcards.tech}"]["costs"],
     input:
-        area_potentials_path="<resources>/user/shapes/{shape}/area_potential_{tech}.tif",
+        area_potentials_path="<potentials>/shapes/{shape}/area_potential_{tech}.tif",
         resampled_path=lambda wc:
             f"<resources>/automatic/resampled/{wc.shape}/"
             f"resampled_{TECH_TO_SOURCE[wc.tech]}OUT.tif",
