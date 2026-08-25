@@ -24,4 +24,12 @@ techs:
       CAPEX: 1146644
       OPEX: 16663
       WACC: 0.04
+  
+  wind_offshore:
+    density: 5
+    lifetime: 30
+    costs: # TODO: this needs to be country-specific
+      CAPEX: 2248224
+      OPEX: 32000
+      WACC: 0.05
     

@@ -46,7 +46,6 @@ def synthesise_cost_land(quantity_cost_techs, curve_data):
     print(f"[TIMING] Reading NetCDF files took {t2 - t1:.4f} seconds")
     # The techs that will 'occupy land' are pv_open_field and wind_onshore
     # Find the pixels where both tech exist to calculate the land footprint
-    breakpoint()
     if ("pv_open_field" in ds_dict.keys()) & ("wind_onshore" in ds_dict.keys()):
         t3 = time.perf_counter()
         pv_area_pixels = ds_dict["pv_open_field"]["pixel_id"].values
@@ -154,15 +153,11 @@ def synthesise_cost_land(quantity_cost_techs, curve_data):
     area_all_tech = area_all_tech[order]
     id_all_tech = id_all_tech[order]
     # Need to return: lcoe, prod, area, tech_id, left_positions
-    left_positions = np.cumsum(np.concatenate(([0.0], prod_all_tech[:-1]))).astype(
-        np.float32
-    )
     result_dict = {
         "lcoe": lcoe_all_tech,
         "prod": prod_all_tech,
         "area": area_all_tech,
         "tech_id": id_all_tech,
-        "left_positions": left_positions,
     }
     table = pa.table(result_dict)
     pq.write_table(table, curve_data)
