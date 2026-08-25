@@ -48,6 +48,6 @@ rule synthesise_cost_land:
             tech=config["techs"].keys(),
         ),
     output:
-        curve_data="<results>/{shape}/curves_data_prep.parquet",
+        curve_data="<results>/shapes/{shape}/curves_data_prep.parquet",
     script:
         "../scripts/synthesise_curves.py"

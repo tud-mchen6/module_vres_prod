@@ -25,7 +25,7 @@ rule clip_wind_atlas:
         raster="<resources>/automatic/global/WINDOUT.tif",
         like_raster="<potentials>/shapes/{shape}/area_potential_wind_onshore.tif",
     output:
-        path="<resources>/automatic/cutout/{shape}/clipped_WINDOUT.tif",
+        path=temp("<resources>/automatic/cutout/{shape}/clipped_WINDOUT.tif"),
     log:
         "<logs>/{shape}/clip_wind_atlas.log",
     wrapper:
