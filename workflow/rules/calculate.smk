@@ -22,14 +22,14 @@ rule prod_quantity_cost:
         lifetime=lambda wildcards: config["techs"][f"{wildcards.tech}"]["lifetime"],
         costs=lambda wildcards: config["techs"][f"{wildcards.tech}"]["costs"],
     input:
-        area_potentials_path="resources/user/shapes/{shape}/area_potential_{tech}.tif",
+        area_potentials_path="<resources>/user/shapes/{shape}/area_potential_{tech}.tif",
         resampled_path=lambda wc:
-            f"resources/automatic/resampled/{wc.shape}/"
+            f"<resources>/automatic/resampled/{wc.shape}/"
             f"resampled_{TECH_TO_SOURCE[wc.tech]}OUT.tif",
     output:
-        production_tech="resources/automatic/resampled/{shape}/quantity_cost_{tech}.nc",
+        production_tech="<resources>/automatic/resampled/{shape}/quantity_cost_{tech}.nc",
     log:
-        "logs/{shape}/quantity_cost_{tech}.log",
+        "<logs>/{shape}/quantity_cost_{tech}.log",
     script:
         "../scripts/quantity_cost.py"
 
@@ -43,11 +43,11 @@ rule synthesise_cost_land:
         """
     input:
         quantity_cost_techs=lambda wildcards: expand(
-            "resources/automatic/resampled/{shape}/quantity_cost_{tech}.nc",
+            "<resources>/automatic/resampled/{shape}/quantity_cost_{tech}.nc",
             shape=wildcards.shape,
             tech=config["techs"].keys(),
         ),
     output:
-        curve_data="results/{shape}/curves_data_prep.parquet",
+        curve_data="<results>/{shape}/curves_data_prep.parquet",
     script:
         "../scripts/synthesise_curves.py"
