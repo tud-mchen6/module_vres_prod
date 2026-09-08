@@ -9,32 +9,6 @@ import rioxarray as rxr
 import numpy as np
 
 
-# def flatten_with_pixel_id(input_raster):
-#     pixel_id = xr.DataArray(
-#         np.arange(input_raster.sizes["y"] * input_raster.sizes["x"]).reshape(
-#             input_raster.sizes["y"], input_raster.sizes["x"]
-#         ),
-#         dims=("y", "x"),
-#         coords={"y": input_raster.y, "x": input_raster.x},
-#         name="pixel_id",
-#     )
-#     pixel = input_raster.stack(pixel=("y", "x"))
-#     result = pixel.where(pixel.notnull(), drop=True)
-#     output_array = (
-#         result.assign_coords(
-#             pixel_id=(
-#                 "pixel",
-#                 pixel_id.stack(pixel=("y", "x")).sel(pixel=result.pixel).values,
-#             )
-#         )
-#         .swap_dims({"pixel": "pixel_id"})
-#         .drop_vars("pixel")
-#     )
-#     del pixel
-
-#     return output_array
-
-
 def flatten_with_pixel_id(input_raster):
     pixel = input_raster.stack(pixel=("y", "x"))
 
@@ -60,7 +34,7 @@ def quantity_cost_tech(
     """_summary_
 
     Args:
-        density (float): MW/m2
+        density (float): MW/km2
         lifetime (int): year
         costs (dict): EUR/MW
         area_potentials_path (str): path to the input selected area raster file.
@@ -71,7 +45,7 @@ def quantity_cost_tech(
     # Get the tech name
     tech = snakemake.wildcards.tech
     # Get the area potentials
-    area_potentials = rxr.open_rasterio(area_potentials_path)
+    area_potentials = rxr.open_rasterio(area_potentials_path)  # m2
     area_potentials = area_potentials.where(area_potentials > 0, np.nan)
     # Load the capacity factor within the resampled input
     resampled = rxr.open_rasterio(resampled_path)
@@ -79,16 +53,19 @@ def quantity_cost_tech(
     # The atlas also has nan values from the original dataset
     mask = np.isfinite(area_potentials) & np.isfinite(resampled)
     resampled_masked = resampled.where(mask)
+    area_potentials_masked = area_potentials.where(mask)
     # Flatten the raster to decrease the size
-    area_potentials_flattened = flatten_with_pixel_id(area_potentials)
+    area_potentials_flattened = flatten_with_pixel_id(area_potentials_masked)
     cf = flatten_with_pixel_id(resampled_masked)
+    # cf is hour of full load per day, divide by 24 to get the capacity factor
+    cf = cf / 24
 
     # Calculate the yearly aggregated production
     # Assuming same production level for each year
     # area convert to km2; production unit is MWh
     yearly_prod = area_potentials_flattened * cf * density * 8760 * 1e-6
 
-    # Calculate the rastered LCOE
+    # Calculate the rastered LCOE. Cost unit: EUR/MW
     lcoe = (
         costs["CAPEX"] / (1 - (1 + costs["WACC"]) ** (-lifetime)) * costs["WACC"]
         + costs["OPEX"]
