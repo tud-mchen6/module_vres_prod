@@ -67,7 +67,6 @@ def quantity_cost_tech(
     yearly_prod = area_potentials_flattened * cf * density * 8760 * 1e-6
 
     # Calculate the rastered LCOE. Cost unit: EUR/MW
-    breakpoint()
     lcoe = (
         costs["CAPEX"] / (1 - (1 + costs["WACC"]) ** (-lifetime)) * costs["WACC"]
         + costs["OPEX"]
