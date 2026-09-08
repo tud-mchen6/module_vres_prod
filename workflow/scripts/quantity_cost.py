@@ -57,8 +57,9 @@ def quantity_cost_tech(
     # Flatten the raster to decrease the size
     area_potentials_flattened = flatten_with_pixel_id(area_potentials_masked)
     cf = flatten_with_pixel_id(resampled_masked)
-    # cf is hour of full load per day, divide by 24 to get the capacity factor
-    cf = cf / 24
+    # For PV, cf is hour of full load per day, divide by 24 to get the capacity factor
+    if "pv" in tech:
+        cf = cf / 24
 
     # Calculate the yearly aggregated production
     # Assuming same production level for each year
@@ -66,6 +67,7 @@ def quantity_cost_tech(
     yearly_prod = area_potentials_flattened * cf * density * 8760 * 1e-6
 
     # Calculate the rastered LCOE. Cost unit: EUR/MW
+    breakpoint()
     lcoe = (
         costs["CAPEX"] / (1 - (1 + costs["WACC"]) ** (-lifetime)) * costs["WACC"]
         + costs["OPEX"]
