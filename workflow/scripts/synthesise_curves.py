@@ -152,13 +152,18 @@ def synthesise_cost_land(quantity_cost_techs, curve_data):
     prod_all_tech = prod_all_tech[order]
     area_all_tech = area_all_tech[order]
     id_all_tech = id_all_tech[order]
-    # Need to return: lcoe, prod, area, tech_id, left_positions
+    # Need to return: lcoe, prod, area, tech_id
     result_dict = {
         "lcoe": lcoe_all_tech,
         "prod": prod_all_tech,
         "area": area_all_tech,
         "tech_id": id_all_tech,
     }
+    # Shave out the parts where LCOE is too high. Default threshold is 300 EUR/MWh
+    lcoe_threshold = 300
+    mask = result_dict["lcoe"] <= lcoe_threshold
+    for key in result_dict.keys():
+        result_dict[key] = result_dict[key][mask]
     table = pa.table(result_dict)
     pq.write_table(table, curve_data)
     t10 = time.perf_counter()
