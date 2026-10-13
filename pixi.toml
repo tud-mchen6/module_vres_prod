@@ -25,6 +25,8 @@ rioxarray = ">=0.23.0"
 netcdf4 = ">=1.7.4"
 rasterio = ">=1.5.1"
 dask = ">=2026.7.1"
+matplotlib = ">=3.11.2"
+pycountry = ">=26.2.16"
 
 [feature.module.dependencies]
 curl = ">=8.9.1"
