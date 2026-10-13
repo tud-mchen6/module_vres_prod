@@ -1,21 +1,21 @@
 # Emulate a user configuring the module.
 configfile: workflow.source_path("./test_config.yaml")
 
-# Emulate how another workflow might create inputs for this module.
-rule create_external_input:
-    message: "Example of a rule external to your module."
-    output:
-        text_file = "resources/user/user_message.md"
-    run:
-        from pathlib import Path
-        from textwrap import dedent
-        text = dedent("""Modular workflows can be used by more than one project!
-            For example, this text comes from a file external to the module.
-            Try your best to make this workflow reusable so that others may benefit from your methods."""
-        )
-        file_path = Path(output.text_file)
-        with file_path.open("w") as f:
-            f.write(text)
+# # Emulate how another workflow might create inputs for this module.
+# rule create_external_input:
+#     message: "Example of a rule external to your module."
+#     output:
+#         text_file = "resources/user/user_message.md"
+#     run:
+#         from pathlib import Path
+#         from textwrap import dedent
+#         text = dedent("""Modular workflows can be used by more than one project!
+#             For example, this text comes from a file external to the module.
+#             Try your best to make this workflow reusable so that others may benefit from your methods."""
+#         )
+#         file_path = Path(output.text_file)
+#         with file_path.open("w") as f:
+#             f.write(text)
 
 # Import the module and configure it.
 # `snakefile:` specifies the module. It can use file paths and special github(...) / gitlab(...) markers
@@ -25,10 +25,10 @@ module module_vres_yearly_prod:
     snakefile: "../../workflow/Snakefile"
     config: config["module_vres_yearly_prod"]
     pathvars:
-        # Redirect specific user resources (inputs)
-        user_message=rules.create_external_input.output.text_file,
-        # Redirect specific module results (outputs)
-        combined_text="results/output/combined_text.md",
+        # # Redirect specific user resources (inputs)
+        # user_message=rules.create_external_input.output.text_file,
+        # # Redirect specific module results (outputs)
+        # combined_text="results/output/combined_text.md",
         # Redirect intermediate files that are internal to the module
         logs="resources/module/logs",
         resources="resources/module/resources",
