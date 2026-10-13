@@ -49,5 +49,24 @@ rule synthesise_cost_land:
         ),
     output:
         curve_data="<results>/shapes/{shape}/curves_data_prep.parquet",
+    log:
+        "<logs>/{shape}/synthesise_curves.log",
     script:
         "../scripts/synthesise_curves.py"
+
+
+rule plot_curves:
+    message:
+        """
+        Plot the cost curve and land curve for a given shape, combining several
+        technologies.
+        """
+    input:
+        curve_data="<results>/shapes/{shape}/curves_data_prep.parquet",
+    output:
+        cost_curve="<results>/shapes/{shape}/cost_curve.pdf",
+        land_curve="<results>/shapes/{shape}/land_curve.pdf",
+    log:
+        "<logs>/{shape}/plot_curves.log",
+    script:
+        "../scripts/plot_curves.py"
