@@ -43,12 +43,12 @@ def plot_curves(curve_data: str, cost_curve: str, land_curve: str):
         mask = dict_curves["tech_id"] == tech
         ax.fill_between(
             cum_prod,
-            0,
             dict_curves["lcoe"],
             where=mask,
             color=color,
-            alpha=0.8,
+            alpha=0.3,
             interpolate=False,
+            rasterized=True,
         )
     plt.xlabel("Cumulative Capacity (MWh)", fontsize=14)
     plt.ylabel("Cost per MWh (EUR/MWh)", fontsize=14)
