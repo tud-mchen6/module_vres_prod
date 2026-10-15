@@ -9,7 +9,7 @@ rule clip_solar_atlas:
         "Clip the downloaded solar atlas to given shapes."
     input:
         raster="<resources>/automatic/global/PVOUT.tif",
-        like_raster="<potentials>/shapes/{shape}/area_potential_pv_open_field.tif",
+        like_raster="<potentials>/{geo_scenario}/{area_scenario}/{shape}/area_potential_pv_open_field.tif",
     output:
         path=temp("<resources>/automatic/cutout/{shape}/clipped_PVOUT.tif"),
     log:
