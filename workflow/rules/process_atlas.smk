@@ -11,9 +11,9 @@ rule clip_solar_atlas:
         raster="<resources>/automatic/global/PVOUT.tif",
         like_raster="<potentials>/{shape}/area_potential_pv_open_field.tif",
     output:
-        path=temp("<resources>/automatic/cutout/{shape}/clipped_PVOUT.tif"),
+        path=temp("<resources>/automatic/cutout/{geo_scenario}/{area_scenario}/{shape}/clipped_PVOUT.tif"),
     log:
-        "<logs>/{shape}/clip_solar_atlas.log",
+        "<logs>/{geo_scenario}/{area_scenario}/{shape}/clip_solar_atlas.log",
     wrapper:
         "v9.0.0/geo/rasterio/clip"
 
