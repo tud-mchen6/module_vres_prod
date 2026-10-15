@@ -48,7 +48,7 @@ rule synthesise_cost_land:
             tech=config["techs"].keys(),
         ),
     output:
-        curve_data="<results>/{shape}/curves_data_prep.parquet",
+        curve_data="<results>/shapes/{shape}/curves_data_prep.parquet",
     log:
         "<logs>/{shape}/synthesise_curves.log",
     script:
@@ -62,10 +62,10 @@ rule plot_curves:
         technologies.
         """
     input:
-        curve_data="<results>/{shape}/curves_data_prep.parquet",
+        curve_data="<results>/shapes/{shape}/curves_data_prep.parquet",
     output:
-        cost_curve="<results>/{shape}/cost_curve.pdf",
-        land_curve="<results>/{shape}/land_curve.pdf",
+        cost_curve="<results>/shapes/{shape}/cost_curve.pdf",
+        land_curve="<results>/shapes/{shape}/land_curve.pdf",
     log:
         "<logs>/{shape}/plot_curves.log",
     script:
