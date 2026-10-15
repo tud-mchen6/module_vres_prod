@@ -50,4 +50,4 @@ rule all:
     conda:
         "envs/module.yaml"
     shell:
-        'echo "This workflow must be called as a snakemake module." > {log.stderr}'
+        'echo "This workflow must be called as a snakemake module." >&2; exit 1'
