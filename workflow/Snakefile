@@ -45,8 +45,8 @@ rule all:
     default_target: True
     output:
         "INVALID",
-    log:
-        stderr="<logs>/all.stderr",
+    # log:
+    #     stderr="<logs>/all.stderr",
     conda:
         "envs/module.yaml"
     shell:
