@@ -50,9 +50,11 @@ def plot_curves(curve_data: str, cost_curve: str, land_curve: str):
             interpolate=False,
             rasterized=True,
         )
-    plt.xlabel("Cumulative Capacity (MWh)", fontsize=14)
-    plt.ylabel("Cost per MWh (EUR/MWh)", fontsize=14)
-    plt.title("Renewables cost curve of " + country_name, fontsize=16)
+    plt.xlabel("Cumulative Production (MWh)", fontsize=14)
+    plt.ylabel("Levelised cost of electricity per MWh (EUR/MWh)", fontsize=14)
+    plt.title(
+        "Renewable electricity production cost curve of " + country_name, fontsize=16
+    )
     plt.legend(
         handles=[
             plt.Line2D([0], [0], color="yellow", lw=4, label="Open field PV"),
