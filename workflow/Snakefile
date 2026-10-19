@@ -11,10 +11,10 @@ min_version("9.19")
 pathvars:
     # User resources; not yet well configured for within-module run
     resources_general="resources",
-    resources_scenarios="resources",
+    resources_scenarios="resources/user/ecemp_geo/ecemp_area",
     results="results",
     logs="logs",
-    potentials="resources/user",
+    potentials="resources/user/ecemp_geo/ecemp_area",
 
 
 # Load the example configuration. This will be overridden by users.

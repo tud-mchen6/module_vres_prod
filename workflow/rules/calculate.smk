@@ -9,6 +9,8 @@ TECH_TO_SOURCE = {
     "wind_offshore": "WIND",
 }
 
+overrides=config.get("overrides", {})
+
 
 rule prod_quantity_cost:
     message:
@@ -21,13 +23,14 @@ rule prod_quantity_cost:
         density=lambda wildcards: config["techs"][f"{wildcards.tech}"]["density"],
         lifetime=lambda wildcards: config["techs"][f"{wildcards.tech}"]["lifetime"],
         costs=lambda wildcards: config["techs"][f"{wildcards.tech}"]["costs"],
+        overrides=overrides,
     input:
         area_potentials_path="<potentials>/{shape}/area_potential_{tech}.tif",
         resampled_path=lambda wc:
-            f"<resources_scenarios>/automatic/resampled/{wc.shape}/"
+            f"<resources_scenarios>/resampled/{wc.shape}/"
             f"resampled_{TECH_TO_SOURCE[wc.tech]}OUT.tif",
     output:
-        production_tech="<resources_scenarios>/automatic/resampled/{shape}/quantity_cost_{tech}.nc",
+        production_tech="<resources_scenarios>/{shape}/quantity_cost_{tech}.nc",
     log:
         "<logs>/{shape}/quantity_cost_{tech}.log",
     script:
@@ -43,7 +46,7 @@ rule synthesise_cost_land:
         """
     input:
         quantity_cost_techs=lambda wildcards: expand(
-            "<resources_scenarios>/automatic/resampled/{shape}/quantity_cost_{tech}.nc",
+            "<resources_scenarios>/{shape}/quantity_cost_{tech}.nc",
             shape=wildcards.shape,
             tech=config["techs"].keys(),
         ),

@@ -11,7 +11,7 @@ rule clip_solar_atlas:
         raster="<resources_general>/automatic/global/PVOUT.tif",
         like_raster="<potentials>/{shape}/area_potential_pv_open_field.tif",
     output:
-        path=temp("<resources_scenarios>/automatic/cutout/{shape}/clipped_PVOUT.tif"),
+        path=temp("<resources_scenarios>/clipped/{shape}/clipped_PVOUT.tif"),
     log:
         "<logs>/{shape}/clip_solar_atlas.log",
     wrapper:
@@ -25,7 +25,7 @@ rule clip_wind_atlas:
         raster="<resources_general>/automatic/global/WINDOUT.tif",
         like_raster="<potentials>/{shape}/area_potential_wind_onshore.tif",
     output:
-        path=temp("<resources_scenarios>/automatic/cutout/{shape}/clipped_WINDOUT.tif"),
+        path=temp("<resources_scenarios>/clipped/{shape}/clipped_WINDOUT.tif"),
     log:
         "<logs>/{shape}/clip_wind_atlas.log",
     wrapper:
@@ -36,11 +36,11 @@ rule resample_solar_atlas:
     message:
         "Resample the clipped atlas to the given resolution."
     input:
-        raster="<resources_scenarios>/automatic/cutout/{shape}/clipped_PVOUT.tif",
+        raster="<resources_scenarios>/clipped/{shape}/clipped_PVOUT.tif",
         like_raster="<potentials>/{shape}/area_potential_pv_open_field.tif",
         script=workflow.source_path("../scripts/resample_atlas.py"),
     output:
-        path="<resources_scenarios>/automatic/resampled/{shape}/resampled_PVOUT.tif",
+        path="<resources_scenarios>/resampled/{shape}/resampled_PVOUT.tif",
     log:
         "<logs>/{shape}/resample_solar_atlas.log",
     shell:
@@ -53,11 +53,11 @@ rule resample_wind_atlas:
     message:
         "Resample the clipped atlas to the given resolution."
     input:
-        raster="<resources_scenarios>/automatic/cutout/{shape}/clipped_WINDOUT.tif",
+        raster="<resources_scenarios>/clipped/{shape}/clipped_WINDOUT.tif",
         like_raster="<potentials>/{shape}/area_potential_wind_onshore.tif",
         script=workflow.source_path("../scripts/resample_atlas.py"),
     output:
-        path="<resources_scenarios>/automatic/resampled/{shape}/resampled_WINDOUT.tif",
+        path="<resources_scenarios>/resampled/{shape}/resampled_WINDOUT.tif",
     log:
         "<logs>/{shape}/resample_wind_atlas.log",
     shell:

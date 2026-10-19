@@ -32,4 +32,14 @@ techs:
       CAPEX: 2248224
       OPEX: 32000
       WACC: 0.05
-    
+
+overrides:
+  DEU:
+    pv_open_field:
+      costs:
+        WACC: 0.03
+  NAM:
+    pv_open_field:
+      density: 50
+      costs:
+        WACC: 0.06

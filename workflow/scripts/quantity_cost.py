@@ -30,6 +30,7 @@ def quantity_cost_tech(
     area_potentials_path: str,
     resampled_path: str,
     output_path: str,
+    overrides: dict = None,
 ):
     """_summary_
 
@@ -66,6 +67,21 @@ def quantity_cost_tech(
     # area convert to km2; production unit is MWh
     yearly_prod = area_potentials_flattened * cf * density * 8760 * 1e-6
 
+    # Get overrides if exist
+    if overrides is not None:
+        if len(overrides) > 0:
+            shape = snakemake.wildcards.shape
+            if shape in overrides:
+                if tech in overrides[shape]:
+                    for key, value in overrides[shape][tech].items():
+                        if key == "density":
+                            density = value
+                        elif key == "lifetime":
+                            lifetime = value
+                        elif key == "costs":
+                            for cost_key, cost_value in value.items():
+                                costs[cost_key] = cost_value
+
     # Calculate the rastered LCOE. Cost unit: EUR/MW
     lcoe = (
         costs["CAPEX"] / (1 - (1 + costs["WACC"]) ** (-lifetime)) * costs["WACC"]
@@ -101,4 +117,5 @@ if __name__ == "__main__":
         area_potentials_path=snakemake.input.area_potentials_path,
         resampled_path=snakemake.input.resampled_path,
         output_path=snakemake.output.production_tech,
+        overrides=snakemake.params.overrides,
     )
