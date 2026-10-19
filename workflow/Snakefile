@@ -12,7 +12,7 @@ pathvars:
     # User resources; not yet well configured for within-module run
     resources_general="resources",
     resources_scenarios="resources/user/ecemp_geo/ecemp_area",
-    results="results",
+    results="results/ecemp_geo/ecemp_area",
     logs="logs",
     potentials="resources/user/ecemp_geo/ecemp_area",
 
