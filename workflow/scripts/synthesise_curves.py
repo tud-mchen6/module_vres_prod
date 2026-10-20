@@ -160,7 +160,7 @@ def synthesise_cost_land(quantity_cost_techs, curve_data):
         "tech_id": id_all_tech,
     }
     # Shave out the parts where LCOE is too high. Default threshold is 100 EUR/MWh
-    lcoe_threshold = 1000
+    lcoe_threshold = 100
     mask = result_dict["lcoe"] <= lcoe_threshold
     for key in result_dict.keys():
         result_dict[key] = result_dict[key][mask]
