@@ -62,6 +62,7 @@ def plot_curves(curve_data: str, cost_curve: str, land_curve: str):
             plt.Line2D([0], [0], color="darkblue", lw=4, label="Offshore Wind"),
         ],
         title="Technology",
+        loc="upper left",
     )
     plt.grid(alpha=0.3)
     plt.savefig(cost_curve)

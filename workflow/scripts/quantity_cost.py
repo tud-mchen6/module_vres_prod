@@ -61,7 +61,6 @@ def quantity_cost_tech(
     # For PV, cf is hour of full load per day, divide by 24 to get the capacity factor
     if "pv" in tech:
         cf = cf / 24
-    breakpoint() if tech == "wind_onshore" else None
 
     # Calculate the yearly aggregated production
     # Assuming same production level for each year
