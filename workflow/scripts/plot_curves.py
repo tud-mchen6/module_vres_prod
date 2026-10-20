@@ -68,7 +68,7 @@ def plot_curves(curve_data: str, cost_curve: str, land_curve: str):
     plt.close()
 
     # Plot the land curve
-    land_cum = np.cumsum(dict_curves["area"])  # Unit: km2
+    land_cum = np.cumsum(dict_curves["area"]) / 1e6  # Unit: km2
     fig, ax = plt.subplots(figsize=(8, 6))
     ax.plot(
         np.cumsum(dict_curves["prod"]),  # Unit: MWh
