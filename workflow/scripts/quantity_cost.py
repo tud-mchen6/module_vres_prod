@@ -82,6 +82,7 @@ def quantity_cost_tech(
                             for cost_key, cost_value in value.items():
                                 costs[cost_key] = cost_value
 
+    breakpoint()
     # Calculate the rastered LCOE. Cost unit: EUR/MWh
     lcoe = (
         costs["CAPEX"] / (1 - (1 + costs["WACC"]) ** (-lifetime)) * costs["WACC"]
