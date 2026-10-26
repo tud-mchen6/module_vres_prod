@@ -7,6 +7,7 @@ together in a netCDF file for the given technology.
 import xarray as xr
 import rioxarray as rxr
 import numpy as np
+import glom
 
 
 def flatten_with_pixel_id(input_raster):
@@ -24,9 +25,7 @@ def flatten_with_pixel_id(input_raster):
 
 
 def quantity_cost_tech(
-    density: float,
-    lifetime: int,
-    costs: dict,
+    config: dict,
     area_potentials_path: str,
     resampled_path: str,
     output_path: str,
@@ -62,31 +61,22 @@ def quantity_cost_tech(
     if "pv" in tech:
         cf = cf / 24
 
+    # Get overrides if exist
+    if overrides:
+        config = glom.merge([config, overrides])
+    capex = config["CAPEX"]
+    opex = config["OPEX"]
+    wacc = config["WACC"]
+    density = config["density"]
+    lifetime = config["lifetime"]
+
     # Calculate the yearly aggregated production
     # Assuming same production level for each year
     # area convert to km2; production unit is MWh
     yearly_prod = area_potentials_flattened * cf * density * 8760 * 1e-6
 
-    # Get overrides if exist
-    if overrides is not None:
-        if len(overrides) > 0:
-            shape = snakemake.wildcards.shape
-            if shape in overrides:
-                if tech in overrides[shape]:
-                    for key, value in overrides[shape][tech].items():
-                        if key == "density":
-                            density = value
-                        elif key == "lifetime":
-                            lifetime = value
-                        elif key == "costs":
-                            for cost_key, cost_value in value.items():
-                                costs[cost_key] = cost_value
-
     # Calculate the rastered LCOE. Cost unit: EUR/MWh
-    lcoe = (
-        costs["CAPEX"] / (1 - (1 + costs["WACC"]) ** (-lifetime)) * costs["WACC"]
-        + costs["OPEX"]
-    ) / (cf * 8760)
+    lcoe = (capex / (1 - (1 + wacc) ** (-lifetime)) * wacc + opex) / (cf * 8760)
 
     # Save to .nc
     # If the tech is offshore wind, it does not occupy land area, then make the
@@ -111,9 +101,7 @@ def quantity_cost_tech(
 
 if __name__ == "__main__":
     quantity_cost_tech(
-        density=snakemake.params.density,
-        lifetime=snakemake.params.lifetime,
-        costs=snakemake.params.costs,
+        config=snakemake.params.config,
         area_potentials_path=snakemake.input.area_potentials_path,
         resampled_path=snakemake.input.resampled_path,
         output_path=snakemake.output.production_tech,

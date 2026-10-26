@@ -20,10 +20,8 @@ rule prod_quantity_cost:
         Applicable: all types of PV and wind.
         """
     params:
-        density=lambda wildcards: config["techs"][f"{wildcards.tech}"]["density"],
-        lifetime=lambda wildcards: config["techs"][f"{wildcards.tech}"]["lifetime"],
-        costs=lambda wildcards: config["techs"][f"{wildcards.tech}"]["costs"],
-        overrides=overrides,
+        config=lambda wildcards: config["techs"].get(wildcards.tech, {}),
+        overrides=lambda wildcards: config.get("overrides", {}).get(wildcards.shape, {}).get(wildcards.tech, {}),
     input:
         area_potentials_path="<potentials>/{shape}/area_potential_{tech}.tif",
         resampled_path=lambda wc:

@@ -14,20 +14,17 @@ properties:
           description: "Density of renewable technology in MW/km2."
         lifetime:
           type: number
-        costs:
-          type: object
-          properties:
-            CAPEX:
-              type: number
-              description: "Upfront cost in EUR/MW."
-            OPEX:
-              type: number
-              description: "Fixed operational cost in EUR/MW."
-            WACC:
-              type: number
-              description: "Weighted average cost of capital."
-          required: ["CAPEX", "OPEX", "WACC"]
-          additionalProperties: false
+        CAPEX:
+          type: number
+          description: "Upfront cost in EUR/MW."
+        OPEX:
+          type: number
+          description: "Fixed operational cost in EUR/MW."
+        WACC:
+          type: number
+          description: "Weighted average cost of capital."
+      additionalProperties: false
+
   overrides:
     description: "Country-specific technology parameter overrides."
     type: object
@@ -43,17 +40,13 @@ properties:
             description: "Density of renewable technology in MW/km2."
           lifetime:
             type: number
-          costs:
-            type: object
-            properties:
-              CAPEX:
-                type: number
-                description: "Upfront cost in EUR/MW."
-              OPEX:
-                type: number
-                description: "Fixed operational cost in EUR/MW."
-              WACC:
-                type: number
-                description: "Weighted average cost of capital."
-            additionalProperties: false
+          CAPEX:
+            type: number
+            description: "Upfront cost in EUR/MW."
+          OPEX:
+            type: number
+            description: "Fixed operational cost in EUR/MW."
+          WACC:
+            type: number
+            description: "Weighted average cost of capital."
         additionalProperties: false
