@@ -2,51 +2,65 @@ $schema: "https://json-schema.org/draft/2020-12/schema"
 description: "Schema for user-provided configuration files."
 type: object
 additionalProperties: false
-properties:
-  techs:
-    description: "A dictionary of technology configurations."
-    type: object
-    additionalProperties:
-      type: object
-      properties:
-        density:
-          type: number
-          description: "Density of renewable technology in MW/km2."
-        lifetime:
-          type: number
-        CAPEX:
-          type: number
-          description: "Upfront cost in EUR/MW."
-        OPEX:
-          type: number
-          description: "Fixed operational cost in EUR/MW."
-        WACC:
-          type: number
-          description: "Weighted average cost of capital."
-      additionalProperties: false
 
-  overrides:
-    description: "Country-specific technology parameter overrides."
+properties:
+  scenarios:
+    description: Scenarios for which to calculate electricity and hydrogen demand.
     type: object
-    additionalProperties:
-      description: "Overrides for a specific country."
-      type: object
-      additionalProperties:
-        description: "Parameters to override for a specific technology."
+    patternProperties:
+      "^[A-Za-z0-9_-]+$":
+        $ref: "#/$defs/scenarios"
+    minProperties: 1
+    additionalProperties: false
+
+$defs:
+  scenarios:
+    type: object
+    properties:
+      techs:
+        description: "A dictionary of technology configurations."
         type: object
-        properties:
-          density:
-            type: number
-            description: "Density of renewable technology in MW/km2."
-          lifetime:
-            type: number
-          CAPEX:
-            type: number
-            description: "Upfront cost in EUR/MW."
-          OPEX:
-            type: number
-            description: "Fixed operational cost in EUR/MW."
-          WACC:
-            type: number
-            description: "Weighted average cost of capital."
-        additionalProperties: false
+        additionalProperties:
+          type: object
+          properties:
+            density:
+              type: number
+              description: "Density of renewable technology in MW/km2."
+            lifetime:
+              type: number
+            CAPEX:
+              type: number
+              description: "Upfront cost in EUR/MW."
+            OPEX:
+              type: number
+              description: "Fixed operational cost in EUR/MW."
+            WACC:
+              type: number
+              description: "Weighted average cost of capital."
+          additionalProperties: false
+
+      overrides:
+        description: "Country-specific technology parameter overrides."
+        type: object
+        additionalProperties:
+          description: "Overrides for a specific country."
+          type: object
+          additionalProperties:
+            description: "Parameters to override for a specific technology."
+            type: object
+            properties:
+              density:
+                type: number
+                description: "Density of renewable technology in MW/km2."
+              lifetime:
+                type: number
+              CAPEX:
+                type: number
+                description: "Upfront cost in EUR/MW."
+              OPEX:
+                type: number
+                description: "Fixed operational cost in EUR/MW."
+              WACC:
+                type: number
+                description: "Weighted average cost of capital."
+            additionalProperties: false

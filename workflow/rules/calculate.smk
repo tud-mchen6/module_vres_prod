@@ -7,9 +7,7 @@ TECH_TO_SOURCE = {
     "pv_rooftop": "PV",
     "wind_onshore": "WIND",
     "wind_offshore": "WIND",
-}
 
-overrides=config.get("overrides", {})
 
 
 rule prod_quantity_cost:
@@ -20,17 +18,17 @@ rule prod_quantity_cost:
         Applicable: all types of PV and wind.
         """
     params:
-        config=lambda wildcards: config["techs"].get(wildcards.tech, {}),
-        overrides=lambda wildcards: config.get("overrides", {}).get(wildcards.shape, {}).get(wildcards.tech, {}),
+        config=lambda wildcards: config["scenarios"][wildcards.scenario]["techs"].get(wildcards.tech, {}),
+        overrides=lambda wildcards: config["scenarios"][wildcards.scenario].get("overrides", {}).get(wildcards.shape, {}).get(wildcards.tech, {}),
     input:
         area_potentials_path="<potentials>/{shape}/area_potential_{tech}.tif",
         resampled_path=lambda wc:
             f"<resources_scenarios>/resampled/{wc.shape}/"
             f"resampled_{TECH_TO_SOURCE[wc.tech]}OUT.tif",
     output:
-        production_tech="<resources_scenarios>/{shape}/quantity_cost_{tech}.nc",
+        production_tech="<resources_scenarios>/{shape}/quantity_cost_{tech}_{scenario}.nc",
     log:
-        "<logs>/{shape}/quantity_cost_{tech}.log",
+        "<logs>/{shape}/quantity_cost_{tech}_{scenario}.log",
     script:
         "../scripts/quantity_cost.py"
 
@@ -44,14 +42,15 @@ rule synthesise_cost_land:
         """
     input:
         quantity_cost_techs=lambda wildcards: expand(
-            "<resources_scenarios>/{shape}/quantity_cost_{tech}.nc",
+            "<resources_scenarios>/{shape}/quantity_cost_{tech}_{scenario}.nc",
             shape=wildcards.shape,
-            tech=config["techs"].keys(),
+            scenario=wildcards.scenario,
+            tech=config["scenarios"][wildcards.scenario]["techs"].keys(),
         ),
     output:
-        curve_data="<results>/{shape}/curves_data_prep.parquet",
+        curve_data="<results>/{shape}/curves_data_prep_{scenario}.parquet",
     log:
-        "<logs>/{shape}/synthesise_curves.log",
+        "<logs>/{shape}/synthesise_curves_{scenario}.log",
     script:
         "../scripts/synthesise_curves.py"
 
@@ -63,11 +62,11 @@ rule plot_curves:
         technologies.
         """
     input:
-        curve_data="<results>/{shape}/curves_data_prep.parquet",
+        curve_data="<results>/{shape}/curves_data_prep_{scenario}.parquet",
     output:
-        cost_curve="<results>/{shape}/cost_curve.pdf",
-        land_curve="<results>/{shape}/land_curve.pdf",
+        cost_curve="<results>/{shape}/cost_curve_{scenario}.pdf",
+        land_curve="<results>/{shape}/land_curve_{scenario}.pdf",
     log:
-        "<logs>/{shape}/plot_curves.log",
+        "<logs>/{shape}/plot_curves_{scenario}.log",
     script:
         "../scripts/plot_curves.py"

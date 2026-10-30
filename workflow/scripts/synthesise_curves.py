@@ -39,9 +39,12 @@ def synthesise_cost_land(quantity_cost_techs, curve_data):
     tech_files = [p for p in quantity_cost_techs if "rooftop" not in p]
     ds_dict = {}
     for file in tech_files:
-        ds_dict[file.split("/")[-1].split(".")[0].replace("quantity_cost_", "")] = (
-            xr.open_dataset(file)
-        )
+        ds_dict[
+            file.split("/")[-1]
+            .split(".")[0]
+            .replace("quantity_cost_", "")
+            .rsplit("_", 1)[0]
+        ] = xr.open_dataset(file)
     t2 = time.perf_counter()
     print(f"[TIMING] Reading NetCDF files took {t2 - t1:.4f} seconds")
     # The techs that will 'occupy land' are pv_open_field and wind_onshore

@@ -1,39 +1,41 @@
 # A minimal example of how to configure this module
 
-techs:
-  pv_rooftop:
-    density: 50
-    lifetime: 40
-    CAPEX: 705000
-    OPEX: 9800
-    WACC: 0.05
+scenarios:
+  test:
+    techs:
+      pv_rooftop:
+        density: 50
+        lifetime: 40
+        CAPEX: 705000
+        OPEX: 9800
+        WACC: 0.05
 
-  pv_open_field:
-    density: 45
-    lifetime: 40
-    CAPEX: 380000
-    OPEX: 9500
-    WACC: 0.04
-  
-  wind_onshore:
-    density: 5
-    lifetime: 30
-    CAPEX: 1146644
-    OPEX: 16663
-    WACC: 0.04
-  
-  wind_offshore:
-    density: 5
-    lifetime: 30
-    CAPEX: 2248224
-    OPEX: 32000
-    WACC: 0.05
+      pv_open_field:
+        density: 45
+        lifetime: 40
+        CAPEX: 380000
+        OPEX: 9500
+        WACC: 0.04
+      
+      wind_onshore:
+        density: 5
+        lifetime: 30
+        CAPEX: 1146644
+        OPEX: 16663
+        WACC: 0.04
+      
+      wind_offshore:
+        density: 5
+        lifetime: 30
+        CAPEX: 2248224
+        OPEX: 32000
+        WACC: 0.05
 
-overrides:
-  DEU:
-    pv_open_field:
-      WACC: 0.03
-  NAM:
-    pv_open_field:
-      density: 50
-      WACC: 0.06
+    overrides:
+      DEU:
+        pv_open_field:
+          WACC: 0.03
+      NAM:
+        pv_open_field:
+          density: 50
+          WACC: 0.06
