@@ -7,7 +7,7 @@ TECH_TO_SOURCE = {
     "pv_rooftop": "PV",
     "wind_onshore": "WIND",
     "wind_offshore": "WIND",
-
+}
 
 
 rule prod_quantity_cost:
