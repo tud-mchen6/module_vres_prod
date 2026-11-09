@@ -9,6 +9,9 @@ TECH_TO_SOURCE = {
     "wind_offshore": "WIND",
 }
 
+wildcard_constraints:
+    tech="pv_open_field|pv_rooftop|wind_onshore|wind_offshore",
+    scenario="[^_]+",   # or list your scenario names explicitly
 
 rule prod_quantity_cost:
     message:
@@ -26,9 +29,9 @@ rule prod_quantity_cost:
             f"<resources_scenarios>/resampled/{wc.shape}/"
             f"resampled_{TECH_TO_SOURCE[wc.tech]}OUT.tif",
     output:
-        production_tech="<resources_scenarios>/{shape}/quantity_cost_{tech}_{scenario}.nc",
+        production_tech=temp("<resources_scenarios>/{shape}/{scenario}/quantity_cost_{tech}.nc"),
     log:
-        "<logs>/{shape}/quantity_cost_{tech}_{scenario}.log",
+        "<logs>/{shape}/{scenario}/quantity_cost_{tech}.log",
     script:
         "../scripts/quantity_cost.py"
 
@@ -42,7 +45,7 @@ rule synthesise_cost_land:
         """
     input:
         quantity_cost_techs=lambda wildcards: expand(
-            "<resources_scenarios>/{shape}/quantity_cost_{tech}_{scenario}.nc",
+            "<resources_scenarios>/{shape}/{scenario}/quantity_cost_{tech}.nc",
             shape=wildcards.shape,
             scenario=wildcards.scenario,
             tech=config["scenarios"][wildcards.scenario]["techs"].keys(),
