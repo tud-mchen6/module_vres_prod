@@ -82,17 +82,12 @@ def synthesise_cost_land(quantity_cost_techs, curve_data):
         for key in ds_dict.keys():
             if (key != "pv_open_field") & (key != "wind_onshore"):
                 area_all_tech = np.append(
-                    area_all_tech, np.zeros(ds_dict[key].area.sel(tech=key).size)
+                    area_all_tech, np.zeros(ds_dict[key].area.size)
                 )
-                prod_all_tech = np.append(
-                    prod_all_tech, ds_dict[key]["prod"].sel(tech=key).values
-                )
-                lcoe_all_tech = np.append(
-                    lcoe_all_tech, ds_dict[key]["lcoe"].sel(tech=key).values
-                )
+                prod_all_tech = np.append(prod_all_tech, ds_dict[key]["prod"].values)
+                lcoe_all_tech = np.append(lcoe_all_tech, ds_dict[key]["lcoe"].values)
                 id_all_tech = np.append(
-                    id_all_tech,
-                    [tech_name_dict[key]] * ds_dict[key].area.sel(tech=key).size,
+                    id_all_tech, [tech_name_dict[key]] * ds_dict[key].area.size
                 )
         area_all_tech = np.concatenate(
             (
