@@ -30,6 +30,8 @@ rule prod_quantity_cost:
             f"resampled_{TECH_TO_SOURCE[wc.tech]}OUT.tif",
     output:
         production_tech=temp("<resources_scenarios>/{shape}/{scenario}/quantity_cost_{tech}.nc"),
+    conda:
+        "../envs/module.yaml",
     log:
         "<logs>/{shape}/{scenario}/quantity_cost_{tech}.log",
     script:
