@@ -39,9 +39,10 @@ def synthesise_cost_land(quantity_cost_techs, curve_data):
     tech_files = [p for p in quantity_cost_techs if "rooftop" not in p]
     ds_dict = {}
     for file in tech_files:
-        ds_dict[file.split("/")[-1].split(".")[0].replace("quantity_cost_", "")] = (
-            xr.open_dataset(file)
-        )
+        if xr.open_dataset(file).area.size > 0:
+            ds_dict[file.split("/")[-1].split(".")[0].replace("quantity_cost_", "")] = (
+                xr.open_dataset(file)
+            )
     t2 = time.perf_counter()
     print(f"[TIMING] Reading NetCDF files took {t2 - t1:.4f} seconds")
     # The techs that will 'occupy land' are pv_open_field and wind_onshore
@@ -60,8 +61,8 @@ def synthesise_cost_land(quantity_cost_techs, curve_data):
         # Check if the shapes fit
         if np.array_equal(pv_common["pixel_id"].values, wind_common["pixel_id"].values):
             t5 = time.perf_counter()
-            pv_area_common = pv_common.area.data[0]
-            wind_area_common = wind_common.area.data[0]
+            pv_area_common = pv_common.area.data
+            wind_area_common = wind_common.area.data
             # Logic: technologies can share land. So if one technology occupies
             # more land in a specific pixel, there's no need to count the land
             # footprint of another technology
@@ -97,36 +98,36 @@ def synthesise_cost_land(quantity_cost_techs, curve_data):
             (
                 area_all_tech,
                 pv_area_common,
-                pv_rest.area.values.reshape(-1),  # TODO: think about wiser ways
+                pv_rest.area.values,  # TODO: think about wiser ways
                 wind_area_common,
-                wind_rest.area.values.reshape(-1),
+                wind_rest.area.values,
             )
         )
         prod_all_tech = np.concatenate(
             (
                 prod_all_tech,
-                pv_common["prod"].values.reshape(-1),
-                pv_rest["prod"].values.reshape(-1),
-                wind_common["prod"].values.reshape(-1),
-                wind_rest["prod"].values.reshape(-1),
+                pv_common["prod"].values,
+                pv_rest["prod"].values,
+                wind_common["prod"].values,
+                wind_rest["prod"].values,
             )
         )
         lcoe_all_tech = np.concatenate(
             (
                 lcoe_all_tech,
-                pv_common["lcoe"].values.reshape(-1),
-                pv_rest["lcoe"].values.reshape(-1),
-                wind_common["lcoe"].values.reshape(-1),
-                wind_rest["lcoe"].values.reshape(-1),
+                pv_common["lcoe"].values,
+                pv_rest["lcoe"].values,
+                wind_common["lcoe"].values,
+                wind_rest["lcoe"].values,
             )
         )
         id_all_tech = np.concatenate(
             (
                 id_all_tech,
-                [tech_name_dict["pv_open_field"]] * pv_common["area"][0].size,
-                [tech_name_dict["pv_open_field"]] * pv_rest["area"][0].size,
-                [tech_name_dict["wind_onshore"]] * wind_common["area"][0].size,
-                [tech_name_dict["wind_onshore"]] * wind_rest["area"][0].size,
+                [tech_name_dict["pv_open_field"]] * pv_common["area"].size,
+                [tech_name_dict["pv_open_field"]] * pv_rest["area"].size,
+                [tech_name_dict["wind_onshore"]] * wind_common["area"].size,
+                [tech_name_dict["wind_onshore"]] * wind_rest["area"].size,
             )
         )
         t8 = time.perf_counter()

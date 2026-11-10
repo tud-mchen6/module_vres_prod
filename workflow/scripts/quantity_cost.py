@@ -11,17 +11,14 @@ import glom
 
 
 def flatten_with_pixel_id(input_raster):
-    pixel = input_raster.stack(pixel=("y", "x"))
+    data = input_raster.values  # (y, x)
+    valid_mask = ~np.isnan(data)
 
-    # Pixel IDs correspond directly to the flattened pixel position.
-    pixel = pixel.assign_coords(
-        pixel_id=("pixel", np.arange(pixel.sizes["pixel"], dtype=np.int64))
+    pixel_ids = np.arange(data.size, dtype=np.int64).reshape(data.shape)
+
+    return xr.DataArray(
+        data[valid_mask], coords={"pixel_id": pixel_ids[valid_mask]}, dims=["pixel_id"]
     )
-
-    # Remove nodata pixels.
-    pixel = pixel.where(pixel.notnull(), drop=True)
-
-    return pixel.swap_dims({"pixel": "pixel_id"}).drop_vars(["pixel", "x", "y"])
 
 
 def quantity_cost_tech(
@@ -47,6 +44,14 @@ def quantity_cost_tech(
     # Get the area potentials
     area_potentials = rxr.open_rasterio(area_potentials_path)  # m2
     area_potentials = area_potentials.where(area_potentials > 0, np.nan)
+    # If there is no area potential, directly return without any output
+    shape = snakemake.wildcards.shape
+    if area_potentials.notnull().sum().values == 0:
+        print(
+            f"No area potential for tech={tech}, country={shape}, output empty dataset."
+        )
+        quantity_cost = xr.Dataset({"area": [], "prod": [], "lcoe": []})
+        quantity_cost.to_netcdf(output_path)
     # Load the capacity factor within the resampled input
     resampled = rxr.open_rasterio(resampled_path)
     # To slim down the calculation, mask out the pixels where area_potentials is nan
@@ -93,9 +98,7 @@ def quantity_cost_tech(
         {"area": area_potentials_flattened, "prod": yearly_prod, "lcoe": lcoe}
     )
     # add tech as a dimension, prepare for the synthesis
-    quantity_cost = quantity_cost.rename_dims({"band": "tech"})
     quantity_cost = quantity_cost.assign_coords(tech=[tech])
-    quantity_cost = quantity_cost.drop_vars("band")
     quantity_cost.to_netcdf(output_path)
 
 
