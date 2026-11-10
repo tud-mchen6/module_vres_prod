@@ -4,6 +4,7 @@ to calculate the cost of each pixel, then put the area, cost and production quan
 together in a netCDF file for the given technology.
 """
 
+# from pynvim import encoding
 import xarray as xr
 import rioxarray as rxr
 import numpy as np
@@ -83,7 +84,6 @@ def quantity_cost_tech(
     # Calculate the rastered LCOE. Cost unit: EUR/MWh
     lcoe = (capex / (1 - (1 + wacc) ** (-lifetime)) * wacc + opex) / (cf * 8760)
 
-    # Save to .nc
     # If the tech is offshore wind, it does not occupy land area, then make the
     # area variable values zero
     if tech == "wind_offshore":
@@ -99,7 +99,11 @@ def quantity_cost_tech(
     )
     # add tech as a dimension, prepare for the synthesis
     quantity_cost = quantity_cost.assign_coords(tech=[tech])
-    quantity_cost.to_netcdf(output_path)
+
+    # save to .nc
+    encoding = {var: {"zlib": True, "complevel": 4} for var in quantity_cost.data_vars}
+    encoding["pixel_id"] = {"zlib": True, "complevel": 4, "dtype": "int64"}
+    quantity_cost.to_netcdf(output_path, format="NETCDF4", encoding=encoding)
 
 
 if __name__ == "__main__":
