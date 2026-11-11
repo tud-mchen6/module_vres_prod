@@ -54,6 +54,8 @@ rule synthesise_cost_land:
         ),
     output:
         curve_data="<results>/{shape}/curves_data_prep_{scenario}.parquet",
+    conda:
+        "../envs/module.yaml",
     log:
         "<logs>/{shape}/synthesise_curves_{scenario}.log",
     script:
