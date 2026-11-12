@@ -133,7 +133,7 @@ def synthesise_cost_land(quantity_cost_techs, curve_data):
             prod_all_tech = np.append(prod_all_tech, ds_dict[key]["prod"].values)
             lcoe_all_tech = np.append(lcoe_all_tech, ds_dict[key]["lcoe"].values)
             id_all_tech = np.append(
-                id_all_tech, [tech_name_dict[key]] * ds_dict[key]["lcoe"][0].size
+                id_all_tech, [tech_name_dict[key]] * ds_dict[key]["lcoe"].size
             )
     # Sort all arrays with lcoe
     t9 = time.perf_counter()
