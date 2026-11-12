@@ -129,15 +129,9 @@ def synthesise_cost_land(quantity_cost_techs, curve_data):
         print(f"[TIMING] Constructing all three full arrays took {t8 - t7:.4f} seconds")
     else:
         for key in ds_dict.keys():
-            area_all_tech = np.append(
-                area_all_tech, ds_dict[key]["area"].sel(tech=key).values
-            )
-            prod_all_tech = np.append(
-                prod_all_tech, ds_dict[key]["prod"].sel(tech=key).values
-            )
-            lcoe_all_tech = np.append(
-                lcoe_all_tech, ds_dict[key]["lcoe"].sel(tech=key).values
-            )
+            area_all_tech = np.append(area_all_tech, ds_dict[key]["area"].values)
+            prod_all_tech = np.append(prod_all_tech, ds_dict[key]["prod"].values)
+            lcoe_all_tech = np.append(lcoe_all_tech, ds_dict[key]["lcoe"].values)
             id_all_tech = np.append(
                 id_all_tech, [tech_name_dict[key]] * ds_dict[key]["lcoe"][0].size
             )
