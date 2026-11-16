@@ -1,25 +1,45 @@
 """
 This script uses assumed technology cost data, renewables density and discount rate
-to calculate the cost of each pixel, then put the area, cost and production quantity
-together in a netCDF file for the given technology.
+to calculate the cost of each pixel, then stores the area, production quantity and
+cost of every valid pixel of the given technology in an uncompressed .npz file.
+
+Performance notes (vs. the previous xarray/netCDF version):
+- Rasters are read with rasterio directly into float32 numpy arrays. No xarray
+  objects, so no coordinate alignment and no full-raster float64 copies.
+- One boolean validity mask is built once and turned into a flat index array.
+  Everything after that only touches the (much smaller) set of valid pixels.
+- The output is a plain uncompressed .npz (temp file, written once and read once).
+  This avoids zlib compression and decompression and netCDF fancy-indexing costs.
 """
 
-# from pynvim import encoding
-import xarray as xr
-import rioxarray as rxr
-import numpy as np
 import glom
+import numpy as np
+import rasterio
+
+# Hours per year, used for production and LCOE
+HOURS_PER_YEAR = 8760
 
 
-def flatten_with_pixel_id(input_raster):
-    data = input_raster.values  # (y, x)
-    valid_mask = ~np.isnan(data)
+def read_band_as_float32(path: str):
+    """Read band 1 of a raster as float32, with the nodata value replaced by NaN.
 
-    pixel_ids = np.arange(data.size, dtype=np.int64).reshape(data.shape)
-
-    return xr.DataArray(
-        data[valid_mask], coords={"pixel_id": pixel_ids[valid_mask]}, dims=["pixel_id"]
-    )
+    Returns the 2D array plus the grid information (shape and affine transform).
+    Shape and transform only describe the rectangular pixel grid (size, corner
+    position, pixel size), not the country border. The border is encoded in
+    the pixel values (nodata/NaN/0 outside), which the validity mask handles.
+    The grid info is used to check that the area and atlas rasters line up
+    pixel by pixel.
+    """
+    with rasterio.open(path) as src:
+        data = src.read(1, out_dtype="float32")
+        nodata = src.nodata
+        grid_shape = (src.height, src.width)
+        transform = src.transform
+    # rasterio does not mask nodata by itself. Convert it to NaN so that one
+    # isfinite() check covers both "real" NaNs and nodata values.
+    if nodata is not None and not np.isnan(nodata):
+        data[data == np.float32(nodata)] = np.nan
+    return data, grid_shape, transform
 
 
 def quantity_cost_tech(
@@ -29,44 +49,72 @@ def quantity_cost_tech(
     output_path: str,
     overrides: dict = None,
 ):
-    """_summary_
+    """Calculate yearly production, LCOE and land area of every valid pixel.
 
     Args:
-        density (float): MW/km2
-        lifetime (int): year
-        costs (dict): EUR/MW
-        area_potentials_path (str): path to the input selected area raster file.
+        config (dict): tech parameters (density [MW/km2], lifetime [year],
+            CAPEX [EUR/MW], OPEX [EUR/MW/year], WACC [-]).
+        area_potentials_path (str): path to the input selected area raster file (m2).
         resampled_path (str): path to the resampled capacity factor raster file.
-        output_path (str): path to the output netCDF file.
+        output_path (str): path to the output .npz file.
+        overrides (dict): shape-specific overrides of config.
     """
 
-    # Get the tech name
+    # Get the tech and shape name
     tech = snakemake.wildcards.tech
-    # Get the area potentials
-    area_potentials = rxr.open_rasterio(area_potentials_path)  # m2
-    area_potentials = area_potentials.where(area_potentials > 0, np.nan)
-    # If there is no area potential, directly return without any output
     shape = snakemake.wildcards.shape
-    if area_potentials.notnull().sum().values == 0:
+
+    # ------------------------------------------------------------------
+    # 1. Read both rasters as plain float32 numpy arrays
+    # ------------------------------------------------------------------
+    area_raw, area_shape, area_transform = read_band_as_float32(area_potentials_path)
+    cf_raw, cf_shape, cf_transform = read_band_as_float32(resampled_path)
+
+    # The previous version relied on xarray aligning the x/y coordinates
+    # (an inner join on float coordinates). Here we work on raw arrays, so
+    # the two rasters must be on exactly the same grid: pixel (row, col) must
+    # be the same location in both. resample_atlas.py uses reproject_match
+    # against the area raster, so this should always hold. Fail loudly if not.
+    if area_shape != cf_shape or not area_transform.almost_equals(cf_transform):
+        raise ValueError(
+            f"Grid mismatch for tech={tech}, shape={shape}: "
+            f"area raster {area_shape} {area_transform} vs "
+            f"atlas raster {cf_shape} {cf_transform}"
+        )
+
+    # ------------------------------------------------------------------
+    # 2. One validity mask, one flat index array
+    # ------------------------------------------------------------------
+    # Valid pixel = positive available area AND a finite capacity factor.
+    # NaN comparisons are False, so (area_raw > 0) also excludes NaN/nodata area.
+    valid = (area_raw > 0) & np.isfinite(cf_raw)
+    # Flat (row-major) pixel index, which is the same pixel_id definition as before.
+    # flatnonzero returns sorted unique ids, which synthesise_curves.py relies on.
+    pixel_id = np.flatnonzero(valid)
+    # uint32 halves the id column; fall back to int64 for huge rasters.
+    if area_raw.size < np.iinfo(np.uint32).max:
+        pixel_id = pixel_id.astype(np.uint32)
+
+    if pixel_id.size == 0:
+        # Intentionally no early return: the code below then naturally writes
+        # empty arrays, which synthesise_curves.py skips.
         print(
             f"No area potential for tech={tech}, country={shape}, output empty dataset."
         )
-        quantity_cost = xr.Dataset({"area": [], "prod": [], "lcoe": []})
-        quantity_cost.to_netcdf(output_path)
-    # Load the capacity factor within the resampled input
-    resampled = rxr.open_rasterio(resampled_path)
-    # To slim down the calculation, mask out the pixels where area_potentials is nan
-    # The atlas also has nan values from the original dataset
-    mask = np.isfinite(area_potentials) & np.isfinite(resampled)
-    resampled_masked = resampled.where(mask)
-    area_potentials_masked = area_potentials.where(mask)
-    # Flatten the raster to decrease the size
-    area_potentials_flattened = flatten_with_pixel_id(area_potentials_masked)
-    cf = flatten_with_pixel_id(resampled_masked)
-    # For PV, cf is hour of full load per day, divide by 24 to get the capacity factor
-    if "pv" in tech:
-        cf = cf / 24
 
+    # Pull out only the valid pixels, then drop the full rasters to free memory
+    area = area_raw.ravel()[pixel_id]  # m2
+    cf = cf_raw.ravel()[pixel_id]
+    del area_raw, cf_raw, valid
+
+    # For PV, the atlas value is hours of full load per day; divide by 24 to get
+    # the capacity factor
+    if "pv" in tech:
+        cf = cf / np.float32(24)
+
+    # ------------------------------------------------------------------
+    # 3. Production and LCOE on the compact arrays
+    # ------------------------------------------------------------------
     # Get overrides if exist
     if overrides:
         config = glom.merge([config, overrides])
@@ -76,34 +124,36 @@ def quantity_cost_tech(
     density = config["density"]
     lifetime = config["lifetime"]
 
-    # Calculate the yearly aggregated production
-    # Assuming same production level for each year
-    # area convert to km2; production unit is MWh
-    yearly_prod = area_potentials_flattened * cf * density * 8760 * 1e-6
+    # Yearly production (MWh), assuming the same production level every year.
+    # Area is converted from m2 to km2 (1e-6). The scalar factor is computed
+    # in Python float first so that the array stays float32.
+    prod = area * cf * np.float32(density * HOURS_PER_YEAR * 1e-6)
 
-    # Calculate the rastered LCOE. Cost unit: EUR/MWh
-    lcoe = (capex / (1 - (1 + wacc) ** (-lifetime)) * wacc + opex) / (cf * 8760)
+    # LCOE (EUR/MWh): annualised CAPEX (capital recovery factor) plus OPEX,
+    # divided by yearly full-load hours. Pixels with cf == 0 get inf; they are
+    # filtered out in synthesise_curves.py.
+    annual_cost = capex / (1 - (1 + wacc) ** (-lifetime)) * wacc + opex
+    with np.errstate(divide="ignore"):
+        lcoe = np.float32(annual_cost) / (cf * np.float32(HOURS_PER_YEAR))
 
-    # If the tech is offshore wind, it does not occupy land area, then make the
-    # area variable values zero
+    # Offshore wind does not occupy land, so its land area is zero
     if tech == "wind_offshore":
-        area_potentials_flattened.values[:] = 0
-    # Downgrade the precision to float32 to save space
-    area_potentials_flattened = area_potentials_flattened.astype("float32")
-    area_potentials_flattened.attrs.pop("scale_factor", None)
-    area_potentials_flattened.attrs.pop("add_offset", None)
-    yearly_prod = yearly_prod.astype("float32")
-    # TODO: clean the Attributes of yearly_prod and lcoe
-    quantity_cost = xr.Dataset(
-        {"area": area_potentials_flattened, "prod": yearly_prod, "lcoe": lcoe}
-    )
-    # add tech as a dimension, prepare for the synthesis
-    quantity_cost = quantity_cost.assign_coords(tech=[tech])
+        area[:] = 0
 
-    # save to .nc
-    encoding = {var: {"zlib": True, "complevel": 4} for var in quantity_cost.data_vars}
-    encoding["pixel_id"] = {"zlib": True, "complevel": 4, "dtype": "int64"}
-    quantity_cost.to_netcdf(output_path, format="NETCDF4", encoding=encoding)
+    # ------------------------------------------------------------------
+    # 4. Save as uncompressed .npz (temp file, read once by synthesise_curves.py)
+    # ------------------------------------------------------------------
+    # grid_shape and transform are stored so that synthesise_curves.py can check
+    # that pixel_ids of different techs refer to the same grid before matching them.
+    np.savez(
+        output_path,
+        pixel_id=pixel_id,
+        area=area.astype(np.float32, copy=False),
+        prod=prod.astype(np.float32, copy=False),
+        lcoe=lcoe.astype(np.float32, copy=False),
+        grid_shape=np.asarray(area_shape, dtype=np.int64),
+        transform=np.asarray(tuple(area_transform)[:6], dtype=np.float64),
+    )
 
 
 if __name__ == "__main__":

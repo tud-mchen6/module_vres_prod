@@ -5,8 +5,6 @@
 
 
 rule clip_solar_atlas:
-    message:
-        "Clip the downloaded solar atlas to given shapes."
     input:
         raster="<resources_general>/automatic/global/PVOUT.tif",
         like_raster="<potentials>/{shape}/area_potential_pv_open_field.tif",
@@ -14,13 +12,13 @@ rule clip_solar_atlas:
         path=temp("<resources_scenarios>/clipped/{shape}/clipped_PVOUT.tif"),
     log:
         "<logs>/{shape}/clip_solar_atlas.log",
+    message:
+        "Clip the downloaded solar atlas to given shapes."
     wrapper:
-        "v9.0.0/geo/rasterio/clip"
+        "v9.20.0/geo/rasterio/clip"
 
 
 rule clip_wind_atlas:
-    message:
-        "Clip the downloaded wind atlas to given shapes."
     input:
         raster="<resources_general>/automatic/global/WINDOUT.tif",
         like_raster="<potentials>/{shape}/area_potential_wind_onshore.tif",
@@ -28,13 +26,13 @@ rule clip_wind_atlas:
         path=temp("<resources_scenarios>/clipped/{shape}/clipped_WINDOUT.tif"),
     log:
         "<logs>/{shape}/clip_wind_atlas.log",
+    message:
+        "Clip the downloaded wind atlas to given shapes."
     wrapper:
-        "v9.0.0/geo/rasterio/clip"
+        "v9.20.0/geo/rasterio/clip"
 
 
 rule resample_solar_atlas:
-    message:
-        "Resample the clipped atlas to the given resolution."
     input:
         raster="<resources_scenarios>/clipped/{shape}/clipped_PVOUT.tif",
         like_raster="<potentials>/{shape}/area_potential_pv_open_field.tif",
@@ -43,15 +41,15 @@ rule resample_solar_atlas:
         path="<resources_scenarios>/resampled/{shape}/resampled_PVOUT.tif",
     log:
         "<logs>/{shape}/resample_solar_atlas.log",
+    message:
+        "Resample the clipped atlas to the given resolution."
     shell:
         """
-        python {input.script:q} {input.raster} {input.like_raster} {output.path} 2> {log:q}
+        python {input.script:q} {input.raster} {input.like_raster} {output.path} 2>{log:q}
         """
 
 
 rule resample_wind_atlas:
-    message:
-        "Resample the clipped atlas to the given resolution."
     input:
         raster="<resources_scenarios>/clipped/{shape}/clipped_WINDOUT.tif",
         like_raster="<potentials>/{shape}/area_potential_wind_onshore.tif",
@@ -60,7 +58,9 @@ rule resample_wind_atlas:
         path="<resources_scenarios>/resampled/{shape}/resampled_WINDOUT.tif",
     log:
         "<logs>/{shape}/resample_wind_atlas.log",
+    message:
+        "Resample the clipped atlas to the given resolution."
     shell:
         """
-        python {input.script:q} {input.raster} {input.like_raster} {output.path} 2> {log:q}
+        python {input.script:q} {input.raster} {input.like_raster} {output.path} 2>{log:q}
         """

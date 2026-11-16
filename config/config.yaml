@@ -1,7 +1,7 @@
 # A minimal example of how to configure this module
 
 scenarios:
-  test:
+  cla:
     techs:
       pv_rooftop:
         density: 50

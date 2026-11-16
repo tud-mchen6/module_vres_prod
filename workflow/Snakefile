@@ -11,10 +11,10 @@ min_version("9.19")
 pathvars:
     # User resources; not yet well configured for within-module run
     resources_general="resources",
-    resources_scenarios="resources/user/ecemp_geo/ecemp_area",
-    results="results/ecemp_geo/ecemp_area",
+    resources_scenarios="resources/user/shapes/test",
+    results="results/shapes/test",
     logs="logs",
-    potentials="resources/user/ecemp_geo/ecemp_area",
+    potentials="resources/user/shapes/test",
 
 
 # Load the example configuration. This will be overridden by users.
@@ -34,20 +34,22 @@ include: "rules/automatic.smk"
 include: "rules/process_atlas.smk"
 include: "rules/calculate.smk"
 
+
 # Add additional files to be delivered alongside the workflow here.
 # This is needed e.g. for python code files that are never
 # explicitly used as a script or input in a snakemake rule.
 # e.g.: workflow.source_path("scripts/_utils.py")
-
 rule all:
-    message:
-        "ERROR: Invalid `rule all:` call"
     default_target: True
     output:
         "INVALID",
     # log:
+
     #     stderr="<logs>/all.stderr",
+
     conda:
         "envs/module.yaml"
+    message:
+        "ERROR: Invalid `rule all:` call"
     shell:
         'echo "This workflow must be called as a snakemake module." >&2; exit 1'

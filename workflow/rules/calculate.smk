@@ -29,7 +29,7 @@ rule prod_quantity_cost:
             f"<resources_scenarios>/resampled/{wc.shape}/"
             f"resampled_{TECH_TO_SOURCE[wc.tech]}OUT.tif",
     output:
-        production_tech=temp("<resources_scenarios>/{shape}/{scenario}/quantity_cost_{tech}.nc"),
+        production_tech=temp("<resources_scenarios>/{shape}/{scenario}/quantity_cost_{tech}.npz"),
     conda:
         "../envs/module.yaml",
     log:
@@ -47,7 +47,7 @@ rule synthesise_cost_land:
         """
     input:
         quantity_cost_techs=lambda wildcards: expand(
-            "<resources_scenarios>/{shape}/{scenario}/quantity_cost_{tech}.nc",
+            "<resources_scenarios>/{shape}/{scenario}/quantity_cost_{tech}.npz",
             shape=wildcards.shape,
             scenario=wildcards.scenario,
             tech=config["scenarios"][wildcards.scenario]["techs"].keys(),
